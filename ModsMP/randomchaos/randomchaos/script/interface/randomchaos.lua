@@ -104,16 +104,45 @@ function RandomChaos.SetupMilitary()
         RandomChaos.SetNextUpgradeCategory()
     end
 
-    RandomChaos.GUITooltip_BuyMilitaryUnit = GUITooltip_BuyMilitaryUnit
-    function GUITooltip_BuyMilitaryUnit(_UpgradeCategory, _NormalTooltip, _DisabledTooltip, _TechnologyType, _ShortCut)
-        RandomChaos.GUITooltip_BuyMilitaryUnit(RandomChaos.NextUpgradeCategory, _NormalTooltip, _DisabledTooltip, _TechnologyType, _ShortCut)
-    end
+    --RandomChaos.GUITooltip_BuyMilitaryUnit = GUITooltip_BuyMilitaryUnit
+    --function GUITooltip_BuyMilitaryUnit(_UpgradeCategory, _NormalTooltip, _DisabledTooltip, _TechnologyType, _ShortCut)
+        --RandomChaos.GUITooltip_BuyMilitaryUnit(RandomChaos.NextUpgradeCategory, _NormalTooltip, _DisabledTooltip, _TechnologyType, _ShortCut)
+    --end
 
     -- disable expel leaders
     RandomChaos.ExpelSettler = GUI.ExpelSettler
     function GUI.ExpelSettler(_Id)
         if Logic.IsLeader(_Id) == 0 then
             RandomChaos.ExpelSettler(_Id)
+        end
+    end
+
+    -- disable buy cannons
+    function GUIAction_BuyCannon() end
+    RandomChaos.GUIUpdate_BuildingButtons = GUIUpdate_BuildingButtons
+    function GUIUpdate_BuildingButtons(_Button, _Technology)
+        if string.find(_Button, "Buy_Cannon") then
+            XGUIEng.DisableButton(_Button, 1)
+        else
+            RandomChaos.GUIUpdate_BuildingButtons(_Button, RandomChaos.BuildingTechnologies[_Technology] or _Technology)
+        end
+    end
+    RandomChaos.GUIUpdate_TechnologyButtons = GUIUpdate_TechnologyButtons
+    function GUIUpdate_TechnologyButtons(_Button, _Technology, _BuildingType)
+        if string.find(_Button, "Buy_Cannon") then
+            XGUIEng.DisableButton(_Button, 1)
+        else
+            RandomChaos.GUIUpdate_TechnologyButtons(_Button, _Technology, _BuildingType)
+        end
+    end
+    RandomChaos.GUITooltip_BuyMilitaryUnit = GUITooltip_BuyMilitaryUnit
+    function GUITooltip_BuyMilitaryUnit(_UpgradeCategory, _NormalTooltip, _DisabledTooltip, _Technology, _ShortCut)
+        if string.find(_NormalTooltip, "BuyCannon") then
+            XGUIEng.SetText(gvGUI_WidgetID.TooltipBottomCosts, "")
+            XGUIEng.SetTextKeyName(gvGUI_WidgetID.TooltipBottomText, "MenuGeneric/UnitNotAvailable")
+            XGUIEng.SetText(gvGUI_WidgetID.TooltipBottomShortCut, "")
+        else
+            RandomChaos.GUITooltip_BuyMilitaryUnit(RandomChaos.NextUpgradeCategory, _NormalTooltip, _DisabledTooltip, _TechnologyType, _ShortCut)
         end
     end
 
@@ -465,7 +494,7 @@ function RandomChaos.SetupResources()
 
     -- hack payday for gold
     function GameCallback_PaydayPayed(_PlayerId, _Amount)
-        RandomChaos.AddToPlayersGlobalResource(_PlayerId, RandomChaos.RawResourceTypes[ResourceType.GoldRaw], _Amount)
+        Logic.AddToPlayersGlobalResource(_PlayerId, RandomChaos.RawResourceTypes[ResourceType.GoldRaw], _Amount)
         return 0
     end
 
@@ -480,15 +509,19 @@ end
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
 function RandomChaos.SetupStartResources()
 
-    RandomChaos.AddToPlayersGlobalResource = Logic.AddToPlayersGlobalResource
-    function Logic.AddToPlayersGlobalResource() end
+    function Tools.GiveResouces(_Player, ...)
+        for resourcetype, _ in pairs(RandomChaos.RawResourceTypes) do
+            Logic.AddToPlayersGlobalResource(_Player, resourcetype, math.random(350, 1850))
+        end
+    end
 
     function RandomChaos.SetRandomResourcesForPlayer(_Player)
         for _, resourcetype in pairs(ResourceType) do
-            RandomChaos.AddToPlayersGlobalResource(_Player, resourcetype, -Logic.GetPlayersGlobalResource(_Player, resourcetype))
+            Logic.SubFromPlayersGlobalResource(_Player, resourcetype, Logic.GetPlayersGlobalResource(_Player, resourcetype))
         end
-        for resourcetype, _ in pairs(RandomChaos.RawResourceTypes) do
-            RandomChaos.AddToPlayersGlobalResource(_Player, resourcetype, math.random(350, 1850))
+
+        if not EMS then
+            Tools.GiveResouces(_Player)
         end
     end
 
@@ -691,10 +724,10 @@ function RandomChaos.SetupSerfMenu()
         RandomChaos.GUIAction_PlaceBuilding(RandomChaos.BuildingUpgradeCategories[_UpgradeCategory])
     end
 
-    RandomChaos.GUIUpdate_BuildingButtons = GUIUpdate_BuildingButtons
-    function GUIUpdate_BuildingButtons(_Button, _Technology)
-        RandomChaos.GUIUpdate_BuildingButtons(_Button, RandomChaos.BuildingTechnologies[_Technology] or _Technology)
-    end
+    --RandomChaos.GUIUpdate_BuildingButtons = GUIUpdate_BuildingButtons
+    --function GUIUpdate_BuildingButtons(_Button, _Technology)
+        --RandomChaos.GUIUpdate_BuildingButtons(_Button, RandomChaos.BuildingTechnologies[_Technology] or _Technology)
+    --end
 
     RandomChaos.GUIUpdate_UpgradeButtons = GUIUpdate_UpgradeButtons
     function GUIUpdate_UpgradeButtons(_Button, _Technology)
