@@ -4,7 +4,6 @@
 RandomChaos = {}
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
 function RandomChaos.InitAll()
-    math.randomseed(math.floor(XGUIEng.GetSystemTime()*100000))
     RandomChaos.SetupMilitary()
     RandomChaos.SetupTechnologies()
     RandomChaos.SetupCosts()
