@@ -509,7 +509,7 @@ end
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
 function RandomChaos.SetupStartResources()
 
-    function Tools.GiveResouces(_Player, ...)
+    function RandomChaos.GiveResouces(_Player, ...)
         for resourcetype, _ in pairs(RandomChaos.RawResourceTypes) do
             Logic.AddToPlayersGlobalResource(_Player, resourcetype, math.random(350, 1850))
         end
@@ -520,9 +520,9 @@ function RandomChaos.SetupStartResources()
             Logic.SubFromPlayersGlobalResource(_Player, resourcetype, Logic.GetPlayersGlobalResource(_Player, resourcetype))
         end
 
-        if not EMS then
-            Tools.GiveResouces(_Player)
-        end
+        --if not EMS then
+            RandomChaos.GiveResouces(_Player)
+        --end
     end
 
     if XNetwork.Manager_DoesExist() == 1 then
