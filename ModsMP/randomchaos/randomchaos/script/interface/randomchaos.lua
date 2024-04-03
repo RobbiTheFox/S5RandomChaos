@@ -3,7 +3,16 @@
 -- reset memory on leave
 RandomChaos = {}
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+RandomChaos.GameCallback_OnGameStart = GameCallback_OnGameStart
+function GameCallback_OnGameStart()
+    RandomChaos.GameCallback_OnGameStart()
+    RandomChaos.InitAll()
+end
+--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
 function RandomChaos.InitAll()
+    if XNetwork.Manager_DoesExist() == 0 then
+        math.randomseed(math.floor(XGUIEng.GetSystemTime()*100000))
+    end
     RandomChaos.SetupMilitary()
     RandomChaos.SetupTechnologies()
     RandomChaos.SetupCosts()
@@ -90,13 +99,14 @@ function RandomChaos.SetupMilitary()
     }
 
     function RandomChaos.SetNextUpgradeCategory()
-        local unittype = RandomChaos.UpgradeCategories[GetRandom_Client(1, table.getn(RandomChaos.UpgradeCategories))]
-        RandomChaos.NextUpgradeCategory = unittype[GetRandom_Client(1, table.getn(unittype))]
+        local unittype = RandomChaos.UpgradeCategories[math.random2(table.getn(RandomChaos.UpgradeCategories))]
+        RandomChaos.NextUpgradeCategory = unittype[math.random2(table.getn(unittype))]
     end
     
     -- set once with math.random, since Logic.GetRandom does not work this early
-    local unittype = RandomChaos.UpgradeCategories[math.random(table.getn(RandomChaos.UpgradeCategories))]
-    RandomChaos.NextUpgradeCategory = unittype[math.random(table.getn(unittype))]
+    RandomChaos.SetNextUpgradeCategory()
+    --local unittype = RandomChaos.UpgradeCategories[math.random(table.getn(RandomChaos.UpgradeCategories))]
+    --RandomChaos.NextUpgradeCategory = unittype[math.random(table.getn(unittype))]
 
     RandomChaos.GUIAction_BuyMilitaryUnit = GUIAction_BuyMilitaryUnit
     function GUIAction_BuyMilitaryUnit(_UpgradeCategory)
@@ -509,9 +519,14 @@ end
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
 function RandomChaos.SetupStartResources()
 
-    function RandomChaos.GiveResouces(_Player, ...)
+    RandomChaos.StartResources = {}
+    for resourcetype, _ in pairs(RandomChaos.RawResourceTypes) do
+        RandomChaos.StartResources[resourcetype] = math.random(350, 1850)
+    end
+    
+    function Tools.GiveResouces(_Player, ...)
         for resourcetype, _ in pairs(RandomChaos.RawResourceTypes) do
-            Logic.AddToPlayersGlobalResource(_Player, resourcetype, math.random(350, 1850))
+            Logic.AddToPlayersGlobalResource(_Player, resourcetype, RandomChaos.StartResources[resourcetype])
         end
     end
 
@@ -520,9 +535,9 @@ function RandomChaos.SetupStartResources()
             Logic.SubFromPlayersGlobalResource(_Player, resourcetype, Logic.GetPlayersGlobalResource(_Player, resourcetype))
         end
 
-        --if not EMS then
-            RandomChaos.GiveResouces(_Player)
-        --end
+        if not EMS then
+            Tools.GiveResouces(_Player)
+        end
     end
 
     if XNetwork.Manager_DoesExist() == 1 then
@@ -788,7 +803,7 @@ function RandomChaos.SetupTrading()
             }
             
             local BuildingID = GUI.GetSelectedEntity()
-            local BuyResourceType = resourcetypes[GetRandom_Client(1, table.getn(resourcetypes))]
+            local BuyResourceType = resourcetypes[math.random2(table.getn(resourcetypes))]
             local BuyResourceAmount = GetBuyResourceAmount(GUI.GetPlayerID(), SellResourceType, SellAmount, BuyResourceType)
             
             GUI.StartTransaction(BuildingID, SellResourceType, BuyResourceType, BuyResourceAmount)
@@ -856,7 +871,7 @@ function RandomChaos.SetupHeroes()
 
     RandomChaos.BuyHeroWindow_Action_BuyHero = BuyHeroWindow_Action_BuyHero
     function BuyHeroWindow_Action_BuyHero(_herotype)
-        RandomChaos.BuyHeroWindow_Action_BuyHero(RandomChaos.HeroTypes[GetRandom_Client(1, table.getn(RandomChaos.HeroTypes))])
+        RandomChaos.BuyHeroWindow_Action_BuyHero(RandomChaos.HeroTypes[math.random2(table.getn(RandomChaos.HeroTypes))])
     end
 
     Trigger.RequestTrigger(Events.LOGIC_EVENT_ENTITY_CREATED, nil, "RandomChaos_HeroCreated", 1, nil, nil)
@@ -867,11 +882,11 @@ function RandomChaos.SetupBlessSettlers()
     RandomChaos.GUIAction_BlessSettlers = GUIAction_BlessSettlers
     function GUIAction_BlessSettlers(_BlessCategory)
         if _BlessCategory < 3 then
-            _BlessCategory = GetRandom_Client(1, 2)
+            _BlessCategory = math.random2(2)
         elseif _BlessCategory < 5 then
-            _BlessCategory = GetRandom_Client(1, 4)
+            _BlessCategory = math.random2(4)
         else
-            _BlessCategory = GetRandom_Client(1, 5)
+            _BlessCategory = math.random2(5)
         end
         RandomChaos.GUIAction_BlessSettlers(_BlessCategory)
     end
@@ -880,7 +895,7 @@ end
 function RandomChaos.SetupWeatherChange()
     RandomChaos.GUIAction_ChangeWeather = GUIAction_ChangeWeather
     function GUIAction_ChangeWeather(_WeatherType)
-        RandomChaos.GUIAction_ChangeWeather(GetRandom_Client(1, 3))
+        RandomChaos.GUIAction_ChangeWeather(math.random2(3))
     end
 end
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
@@ -945,4 +960,21 @@ function GetRandom_Internal(_Method, _Min, _Max)
     local min = (_Max and _Min) or 0
     local max = _Max or _Min or 1
     return (_Method == 1 and Logic.GetRandom(max - min + 1) + min) or XGUIEng.GetRandom(max - min) + min
+end
+---------------------------------------------------------------------------------------------------------------------
+math.randomnumber = math.random()
+function math.random2(_Min, _Max)
+
+    local systemtime = XGUIEng.GetSystemTime()
+    math.randomnumber = math.randomnumber + (systemtime - math.floor(systemtime))
+    math.randomnumber = math.randomnumber - math.floor(math.randomnumber)
+
+    if not _Min then
+        return math.randomnumber
+    end
+
+    local min = (_Max and _Min) or 1
+    local max = _Max or _Min or 1
+
+    return math.floor(math.randomnumber * (max + 1 - min) + min)
 end

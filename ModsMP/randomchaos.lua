@@ -1,7 +1,6 @@
 
 local OnInitialize;
 local OnMapStart;
-local OnGameStarted;
 
 local print = function(...)
 	if LuaDebugger and LuaDebugger.Log then
@@ -25,7 +24,7 @@ function OnInitialize()
             de="Features: @cr - beim Rekrutieren wird eine zufällige Militäreinheit ausgebildet @cr - alle Technologien sind zufällig vertauscht @cr - alle Technologien, Einheiten, Gebäude und Ausbauten kosten eine zufällige Anzahl und Typ an Rohstoffen @cr - Inhalt von Rohstoffvorkommen ist zufällig, Rohstofftyp ist vertauscht @cr - Abbaugeschwindigkeit und -menge von Leibeigenen, Minen und Veredlern ist zufällig @cr - Gebäude im Baumenü sind zufällig vertauscht @cr - Moti Gebäude geben zufälligen Bonus @cr - beim handeln bekommt man einen zufälligen Rohstoff @cr - Steuern und deren Wirkung auf die Motivation sind zufällig @cr - Helden kaufen, kauft einen zufälligen Helden. Wenn ein Held stirbt, ist er weg",
             en="Features: @cr - on recruitment a random military unit will be picked @cr - all technologies are shuffled @cr - every technology, unit, building and upgrad costs random resource types and amounts @cr - the resource amount in resource deposits is random and the resource types are shuffled @cr - extraction speed and amount of serfs, mines and refiners is random @cr - buildings in construction menu are shuffled @cr - motivation buildings give random bonuses @cr - tradings returns a random resource @cr - taxes and their effect on motivation are random @cr - buy hero buys a random hero. if a hero dies he is actually gone",
         },
-        3
+        4
     );
 end;
 function OnMapStart()
@@ -160,17 +159,10 @@ function OnMapStart()
         end
     end;
 end;
-function OnGameStarted()
-	if MetaMod.IsActive("RandomChaos") then
-		print("RandomChaos OnGameStarted");
-		RandomChaos.InitAll();
-	end;
-end;
 
 local Callbacks = {
 	OnInitialize = OnInitialize;
 	OnMapStart = OnMapStart;
-	OnGameStarted = OnGameStarted;
 	Name = "RandomChaos";
 };
 ModLoader_Register(Callbacks);
