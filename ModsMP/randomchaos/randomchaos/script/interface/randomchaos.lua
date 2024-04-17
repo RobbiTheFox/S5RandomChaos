@@ -822,12 +822,12 @@ function RandomChaos.SetupTaxes()
     local endadress = gamelogicobject[12]
     local lastindex = (endadress:GetInt() - startadress:GetInt()) / 4 - 1
 
-    local taxamount, motivationchange
     for i = 0, lastindex, 3 do
-        taxamount, motivationchange = math.random(0,20), math.random(-20,20) / 100
-        startadress[i + 1]:SetInt(taxamount)
+        startadress[i + 1]:SetInt(math.random(0,20))
         if i ~= 6 then
-            startadress[i + 2]:SetFloat(motivationchange)
+            startadress[i + 2]:SetFloat(math.random(-20,20) / 100)
+        else
+            startadress[i + 2]:SetFloat(math.random(-5,5) / 100)
         end
     end
 end
